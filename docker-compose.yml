@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
   db:
@@ -22,8 +22,8 @@ services:
       MINIO_ROOT_PASSWORD: 12345678
     command: server /data
     ports:
-      - "9000:9000" # MinIO API
-      - "9001:9001" # MinIO Console
+      - "9000:9000"
+      - "9001:9001"
     volumes:
       - minio_data:/data
 
