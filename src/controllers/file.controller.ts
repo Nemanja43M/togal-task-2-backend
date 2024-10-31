@@ -20,48 +20,23 @@ export default class FileController {
   public async getFile(req: Request, res: Response) {
     const { id } = req.params;
     const fileService = new FileService();
-    const file = await fileService.getFile(Number(id));
 
-    if (file) {
-      const minio = new MinioService();
-      try {
+    try {
+      const file = await fileService.getFile(Number(id));
+      if (file) {
+        const minio = new MinioService();
         const fileStream = await minio.downloadFile(
           file.filename,
           config.minio.bucketName
         );
         fileStream.pipe(res);
-        return;
-      } catch (err) {
-        logger.error(
-          `File with name: ${file.filename} not found in minio: `,
-          err
-        );
-        res.sendStatus(404);
-        return;
+      } else {
+        res.status(404).send("File not found");
       }
+    } catch (err) {
+      logger.error(`Error fetching file with id ${id}: `, err);
+      res.sendStatus(500);
     }
-
-    const alternativeFile = await fileService.getFile(Number(id) + 1);
-    if (alternativeFile) {
-      const minio = new MinioService();
-      try {
-        const fileStream = await minio.downloadFile(
-          alternativeFile.filename,
-          config.minio.bucketName
-        );
-        fileStream.pipe(res);
-        return;
-      } catch (err) {
-        logger.error(
-          `File with name: ${alternativeFile.filename} not found in minio: `,
-          err
-        );
-        res.sendStatus(404);
-        return;
-      }
-    }
-
-    res.status(404).send("File not found");
   }
 
   public async createFile(req: Request, res: Response) {
